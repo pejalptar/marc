@@ -1,0 +1,49 @@
+stages:
+  - lint
+  - test
+
+default:
+  before_script:
+    - pip install -r requirements.dev.txt
+
+.lint-flake8: &lint-flake8
+  stage: lint
+  script: flake8 .
+
+.lint-black: &lint-black
+  stage: lint
+  script: black --check --diff .
+
+.unit-tests: &unit-tests
+  stage: test
+  script: python setup.py test
+
+test-3.8:
+  image: python:3.8-slim-buster
+  <<: *lint-flake8
+  <<: *lint-black
+  <<: *unit-tests
+
+test-3.7:
+  image: python:3.7-slim-buster
+  <<: *lint-flake8
+  <<: *lint-black
+  <<: *unit-tests
+
+test-3.6:
+  image: python:3.6-slim-buster
+  <<: *lint-flake8
+  <<: *lint-black
+  <<: *unit-tests
+
+test-3.7-pypy:
+  image: pypywheels/manylinux2010-pypy_x86_64
+  before_script:
+    # black requires typed-ast which pypy currently doesn't support:
+    # https://github.com/psf/black/issues/727#issuecomment-547338207
+    - /opt/python/pp373-pypy36_pp73/bin/pip install flake8
+    - /opt/python/pp373-pypy36_pp73/bin/pip install flake8-docstrings
+  script:
+    - /opt/python/pp373-pypy36_pp73/bin/flake8 .
+      # - /opt/python/pp373-pypy36_pp73/bin/black --check --diff .
+    - /opt/python/pp373-pypy36_pp73/bin/python setup.py test
