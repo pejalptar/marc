@@ -70,21 +70,15 @@ class MARCReader(Reader):
     if you have a file in incorrect encode and you know what it is, you can
     try to use your encode in parameter "file_encoding".
 
-    You may want to parse data in a permissive way to avoid stopping on the first
-    wrong record and read as much records as possible:
+    MARCReader parses data in a permissive way and gives the user full control
+    on what to do in case wrong record is encountered. Whenever any error is
+    found reader returns ``None`` instead of regular record object.
+    The exception information and corresponding data are available through
+    reader.current_exception and reader.current_chunk properties:
 
     .. code-block:: python
 
-        reader = MARCReader(open('file.dat', 'rb'), permissive=True)
-
-    In such case ``None`` is return by the iterator.
-    This give you the full control to implement the expected behavior getting
-    exception information under ``reader.last_exception`` which will store
-    a tuple with (<chunk_data>, <catched exception>):
-
-    .. code-block:: python
-
-        reader = MARCReader(open('file.dat', 'rb'), permissive=True)
+        reader = MARCReader(open('file.dat', 'rb'))
         for record in reader:
             if record is None:
                 print(
@@ -118,7 +112,6 @@ class MARCReader(Reader):
         hide_utf8_warnings=False,
         utf8_handling="strict",
         file_encoding="iso8859-1",
-        permissive=False,
     ):
         """The constructor to which you can pass either raw marc or a file-like object.
 
@@ -131,7 +124,6 @@ class MARCReader(Reader):
         self.hide_utf8_warnings = hide_utf8_warnings
         self.utf8_handling = utf8_handling
         self.file_encoding = file_encoding
-        self.permissive = permissive
         if hasattr(marc_target, "read") and callable(marc_target.read):
             self.file_handle = marc_target
         else:
@@ -144,23 +136,33 @@ class MARCReader(Reader):
             self.file_handle = None
 
     def __next__(self):
-        first5 = self.file_handle.read(5)
+        """Read and parse the next record"""
+        if self._current_exception:
+            if isinstance(self._current_exception, RecordLengthInvalid):
+                raise StopIteration
+
+        self._current_chunk = None
+        self._current_exception = None
+
+        self._current_chunk = first5 = self.file_handle.read(5)
         if not first5:
             raise StopIteration
+
         if len(first5) < 5:
-            raise RecordLengthInvalid
+            self._current_exception = RecordLengthInvalid()
+            return
 
         try:
             length = int(first5)
         except ValueError:
-            raise RecordLengthInvalid
+            self._current_exception = RecordLengthInvalid()
+            return
 
         chunk = self.file_handle.read(length - 5)
         chunk = first5 + chunk
         self._current_chunk = chunk
-        self._current_exception = None
         try:
-            record = Record(
+            return Record(
                 chunk,
                 to_unicode=self.to_unicode,
                 force_utf8=self.force_utf8,
@@ -168,13 +170,8 @@ class MARCReader(Reader):
                 utf8_handling=self.utf8_handling,
                 file_encoding=self.file_encoding,
             )
-        except (PymarcException, UnicodeDecodeError, ValueError) as ex:
-            if self.permissive:
-                self._current_exception = ex
-                record = None
-            else:
-                raise ex
-        return record
+        except Exception as ex:
+            self._current_exception = ex
 
 
 def map_records(f, *files):

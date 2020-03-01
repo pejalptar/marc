@@ -57,11 +57,13 @@ class MARC8Test(TestCase):
     def test_marc8_reader_to_unicode_bad_eacc_sequence(self):
         with open("test/bad_eacc_encoding.dat", "rb") as fh:
             reader = MARCReader(fh, to_unicode=True, hide_utf8_warnings=True)
-            try:
-                next(reader)
-                self.assertFalse("Was able to decode invalid MARC8")
-            except UnicodeDecodeError:
-                self.assertTrue("Caught UnicodeDecodeError as expected")
+            record = next(reader)
+            self.assertIsNone(record, "Was able to decode invalid MARC8")
+            self.assertIsInstance(
+                reader.current_exception,
+                UnicodeDecodeError,
+                "Caught UnicodeDecodeError as expected",
+            )
 
     def test_marc8_reader_to_unicode_bad_escape(self):
         with open("test/bad_marc8_escape.dat", "rb") as fh:

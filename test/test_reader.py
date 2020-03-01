@@ -91,14 +91,6 @@ class MARCReaderFileTest(unittest.TestCase, MARCReaderBaseTest):
             self.assertEqual(record["752"]["b"], "Kostroma Oblast")
             self.assertEqual(record["752"]["d"], "Kostroma")
 
-    def test_strict_mode(self):
-        with self.assertRaises(pymarc.exceptions.BaseAddressInvalid), open(
-            "test/bad_records.mrc", "rb"
-        ) as fh:
-            reader = pymarc.MARCReader(fh)
-            for record in reader:
-                self.assertIsNotNone(reader.current_chunk)
-
     # inherit same tests from MARCReaderBaseTest
 
 
@@ -117,9 +109,7 @@ class MARCReaderFilePermissiveTest(unittest.TestCase):
     """Tests MARCReader which provides iterator based access in a permissive way."""
 
     def setUp(self):
-        self.reader = pymarc.MARCReader(
-            open("test/bad_records.mrc", "rb"), permissive=True
-        )
+        self.reader = pymarc.MARCReader(open("test/bad_records.mrc", "rb"))
 
     def tearDown(self):
         if self.reader:
