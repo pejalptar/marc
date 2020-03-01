@@ -22,6 +22,7 @@ from pymarc.exceptions import (
     NoFieldsFound,
     RecordDirectoryInvalid,
     RecordLeaderInvalid,
+    TruncatedRecord,
 )
 from pymarc.field import (
     END_OF_FIELD,
@@ -271,6 +272,8 @@ class Record:
             raise BaseAddressNotFound
         if base_address >= len(marc):
             raise BaseAddressInvalid
+        if len(marc) < int(self.leader[:5]):
+            raise TruncatedRecord
 
         # extract directory, base_address-1 is used since the
         # director ends with an END_OF_FIELD byte
