@@ -1,10 +1,11 @@
-*.pyc
+*.py[co]
 pymarc.egg-info
 build
 dist
 *$py.class
 .eggs
 *.egg
+*.e4p
 Pipfile
 Pipfile.lock
 .vscode
