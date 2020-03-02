@@ -10,8 +10,9 @@ Release v\ |version|
 
 Pymarc is a python library for working with bibliographic data encoded in MARC21.
 
-It should work under python 2.x and 3.x. It provides an API for reading, writing
-and modifying MARC records. It was mostly designed to be an emergency
+Starting with version 4.0.0 it requires python 3.6 and up.
+It provides an API for reading, writing and modifying MARC records.
+It was mostly designed to be an emergency
 eject seat, for getting your data assets out of MARC and into some kind
 of saner representation. However over the years it has been used to
 create and modify MARC records, since despite `repeated calls`_ for it to die as a
