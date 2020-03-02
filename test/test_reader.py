@@ -161,6 +161,43 @@ class MARCReaderFilePermissiveTest(unittest.TestCase):
                 )
 
 
+class TestTruncatedData(unittest.TestCase):
+
+    def test_empty_data(self):
+        count = 0
+        for record in pymarc.MARCReader(b""):
+            count += 1
+        self.assertEqual(count, 0, "expected no records from empty data")
+
+    def test_partial_length(self):
+        count = 0
+        reader = pymarc.MARCReader(b"0012")
+        for record in reader:
+            self.assertIsNone(record, "expected one None record")
+            count += 1
+        self.assertEqual(count, 1, "expected one None record")
+        self.assertEqual(reader.current_chunk, b"0012")
+        self.assertTrue(isinstance(reader.current_exception,
+                                   pymarc.exceptions.TruncatedRecord),
+                        f"expected {pymarc.exceptions.TruncatedRecord} exception, "
+                        f"received: {reader.current_exception}")
+
+    def test_partial_data(self):
+        count = 0
+        data = b"00120cam"
+        reader = pymarc.MARCReader(data)
+        for record in reader:
+            count += 1
+            self.assertIsNone(record, "expected one None record")
+        self.assertEqual(count, 1, "expected one None record")
+        self.assertEqual(reader.current_chunk, data,
+                         f"expected {data}, received {reader.current_chunk}")
+        self.assertTrue(isinstance(reader.current_exception,
+                                   pymarc.exceptions.TruncatedRecord),
+                        f"expected {pymarc.exceptions.TruncatedRecord} exception, "
+                        f"received: {reader.current_exception}")
+
+
 def suite():
     file_suite = unittest.makeSuite(MARCReaderFileTest, "test")
     string_suite = unittest.makeSuite(MARCReaderStringTest, "test")

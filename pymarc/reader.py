@@ -12,7 +12,7 @@ import json
 from io import BytesIO, StringIO
 
 from pymarc import Record, Field
-from pymarc.exceptions import PymarcException, RecordLengthInvalid
+from pymarc.exceptions import RecordLengthInvalid, TruncatedRecord
 
 
 class Reader:
@@ -136,7 +136,7 @@ class MARCReader(Reader):
             self.file_handle = None
 
     def __next__(self):
-        """Read and parse the next record"""
+        """Read and parse the next record."""
         if self._current_exception:
             if isinstance(self._current_exception, RecordLengthInvalid):
                 raise StopIteration
@@ -149,7 +149,7 @@ class MARCReader(Reader):
             raise StopIteration
 
         if len(first5) < 5:
-            self._current_exception = RecordLengthInvalid()
+            self._current_exception = TruncatedRecord()
             return
 
         try:
@@ -161,6 +161,10 @@ class MARCReader(Reader):
         chunk = self.file_handle.read(length - 5)
         chunk = first5 + chunk
         self._current_chunk = chunk
+        if len(self._current_chunk) < length:
+            self._current_exception = TruncatedRecord()
+            return
+
         try:
             return Record(
                 chunk,
