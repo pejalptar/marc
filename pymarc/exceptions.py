@@ -20,6 +20,13 @@ class RecordLengthInvalid(PymarcException):
         return "Invalid record length in first 5 bytes of record"
 
 
+class TruncatedRecord(RecordLengthInvalid):
+    """Truncated record data."""
+
+    def __str__(self):
+        return "Record length in leader is greater than the length of data"
+
+
 class RecordLeaderInvalid(PymarcException):
     """Unable to extract record leader."""
 

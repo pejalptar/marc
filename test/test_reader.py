@@ -147,6 +147,7 @@ class MARCReaderFilePermissiveTest(unittest.TestCase):
             ValueError,
             pymarc.exceptions.NoFieldsFound,
             None,
+            pymarc.exceptions.TruncatedRecord,
         ]
         for exception_type in expected_exceptions:
             record = next(self.reader)
