@@ -13,18 +13,29 @@ class PymarcException(Exception):
     pass
 
 
-class RecordLengthInvalid(PymarcException):
+class FatalReaderEror(PymarcException):
+    """Error preventing further reading."""
+
+
+class RecordLengthInvalid(FatalReaderEror):
     """Invalid record length."""
 
     def __str__(self):
         return "Invalid record length in first 5 bytes of record"
 
 
-class TruncatedRecord(RecordLengthInvalid):
+class TruncatedRecord(FatalReaderEror):
     """Truncated record data."""
 
     def __str__(self):
         return "Record length in leader is greater than the length of data"
+
+
+class EndOfRecordNotFound(FatalReaderEror):
+    """Unable to locate end of record marker."""
+
+    def __str__(self):
+        return "Unable to locate end of record marker"
 
 
 class RecordLeaderInvalid(PymarcException):
