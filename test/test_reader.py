@@ -10,6 +10,7 @@ import re
 import unittest
 
 import pymarc
+from pymarc import exceptions
 
 
 class MARCReaderBaseTest(object):
@@ -68,13 +69,13 @@ class MARCReaderFileTest(unittest.TestCase, MARCReaderBaseTest):
         with codecs.open("test/test.dat", encoding="utf-8") as fh:
             reader = pymarc.MARCReader(fh)
             record = next(reader)
-            self.assertEqual(record["245"]["a"], u"ActivePerl with ASP and ADO /")
+            self.assertEqual(record["245"]["a"], "ActivePerl with ASP and ADO /")
 
     def test_bad_subfield(self):
         with open("test/bad_subfield_code.dat", "rb") as fh:
             reader = pymarc.MARCReader(fh)
             record = next(reader)
-            self.assertEqual(record["245"]["a"], u"ActivePerl with ASP and ADO /")
+            self.assertEqual(record["245"]["a"], "ActivePerl with ASP and ADO /")
 
     def test_bad_indicator(self):
         with open("test/bad_indicator.dat", "rb") as fh:
@@ -130,14 +131,14 @@ class MARCReaderFilePermissiveTest(unittest.TestCase):
         """
         expected_exceptions = [
             None,
-            pymarc.exceptions.BaseAddressInvalid,
-            pymarc.exceptions.BaseAddressNotFound,
-            pymarc.exceptions.RecordDirectoryInvalid,
+            exceptions.BaseAddressInvalid,
+            exceptions.BaseAddressNotFound,
+            exceptions.RecordDirectoryInvalid,
             UnicodeDecodeError,
             ValueError,
-            pymarc.exceptions.NoFieldsFound,
+            exceptions.NoFieldsFound,
             None,
-            pymarc.exceptions.TruncatedRecord,
+            exceptions.TruncatedRecord,
         ]
         for exception_type in expected_exceptions:
             record = next(self.reader)
@@ -162,25 +163,40 @@ class MARCReaderFilePermissiveTest(unittest.TestCase):
 
 
 class TestTruncatedData(unittest.TestCase):
-
     def test_empty_data(self):
         count = 0
         for record in pymarc.MARCReader(b""):
             count += 1
+            self.assertIsNone(record)
         self.assertEqual(count, 0, "expected no records from empty data")
 
     def test_partial_length(self):
         count = 0
         reader = pymarc.MARCReader(b"0012")
         for record in reader:
-            self.assertIsNone(record, "expected one None record")
             count += 1
+            self.assertIsNone(record, "expected one None record")
         self.assertEqual(count, 1, "expected one None record")
         self.assertEqual(reader.current_chunk, b"0012")
-        self.assertTrue(isinstance(reader.current_exception,
-                                   pymarc.exceptions.TruncatedRecord),
-                        f"expected {pymarc.exceptions.TruncatedRecord} exception, "
-                        f"received: {reader.current_exception}")
+        self.assertTrue(
+            isinstance(reader.current_exception, exceptions.TruncatedRecord),
+            f"expected {exceptions.TruncatedRecord} exception, "
+            f"received: {type(reader.current_exception)}",
+        )
+
+    def test_bad_length(self):
+        count = 0
+        reader = pymarc.MARCReader(b"0012X")
+        for record in reader:
+            count += 1
+            self.assertIsNone(record, "expected one None record")
+        self.assertEqual(count, 1, "expected one None record")
+        self.assertEqual(reader.current_chunk, b"0012X")
+        self.assertTrue(
+            isinstance(reader.current_exception, exceptions.RecordLengthInvalid),
+            f"expected {exceptions.RecordLengthInvalid} exception, "
+            f"received: {type(reader.current_exception)}",
+        )
 
     def test_partial_data(self):
         count = 0
@@ -190,12 +206,35 @@ class TestTruncatedData(unittest.TestCase):
             count += 1
             self.assertIsNone(record, "expected one None record")
         self.assertEqual(count, 1, "expected one None record")
-        self.assertEqual(reader.current_chunk, data,
-                         f"expected {data}, received {reader.current_chunk}")
-        self.assertTrue(isinstance(reader.current_exception,
-                                   pymarc.exceptions.TruncatedRecord),
-                        f"expected {pymarc.exceptions.TruncatedRecord} exception, "
-                        f"received: {reader.current_exception}")
+        self.assertEqual(
+            reader.current_chunk,
+            data,
+            f"expected {data}, received {reader.current_chunk}",
+        )
+        self.assertTrue(
+            isinstance(reader.current_exception, exceptions.TruncatedRecord),
+            f"expected {exceptions.TruncatedRecord} exception, "
+            f"received: {type(reader.current_exception)}",
+        )
+
+    def test_missing_end_of_record(self):
+        count = 0
+        data = b"00006 "
+        reader = pymarc.MARCReader(data)
+        for record in reader:
+            count += 1
+            self.assertIsNone(record, "expected one None record")
+        self.assertEqual(count, 1, "expected one None record")
+        self.assertEqual(
+            reader.current_chunk,
+            data,
+            f"expected {data}, received {reader.current_chunk}",
+        )
+        self.assertTrue(
+            isinstance(reader.current_exception, exceptions.EndOfRecordNotFound),
+            f"expected {exceptions.EndOfRecordNotFound} exception, "
+            f"received: {type(reader.current_exception)}",
+        )
 
 
 def suite():
