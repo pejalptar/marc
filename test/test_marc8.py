@@ -7,7 +7,7 @@
 # file.
 
 import os
-from unittest import TestCase, makeSuite
+from unittest import TestCase, makeSuite  # type: ignore
 
 
 from pymarc import Field, MARCReader, MARCWriter, Record, marc8_to_unicode

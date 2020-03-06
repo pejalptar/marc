@@ -47,15 +47,13 @@ class Leader(object):
     :func:`record.as_marc() <pymarc.record.Record.as_marc>`
     """
 
-    def __init__(self, leader):
-        # type: (str)
+    def __init__(self, leader: str) -> None:
         """Leader is initialized with a string."""
         if len(leader) != LEADER_LEN:
             raise RecordLeaderInvalid
         self.leader = leader
 
-    def __getitem__(self, item):
-        # type: (str) -> str
+    def __getitem__(self, item: str) -> str:
         """Get values using position, slice or properties.
 
         leader[:4] == leader.length
@@ -64,8 +62,7 @@ class Leader(object):
             return self.leader[item]
         return getattr(self, item)
 
-    def __setitem__(self, item, value):
-        # type: (str, str) -> str
+    def __setitem__(self, item: str, value: str) -> None:
         """Set values using position, slice or properties.
 
         leader[5] = "a"
@@ -79,13 +76,11 @@ class Leader(object):
         else:
             setattr(self, item, value)
 
-    def __str__(self):
-        # type: () -> str
+    def __str__(self) -> str:
         """A string representation of the leader."""
         return self.leader
 
-    def _replace_values(self, position, value):
-        # type: (int, str) -> str
+    def _replace_values(self, position: int, value: str) -> None:
         """Replaces the values in the leader at `position` by `value`."""
         if position < 0:
             raise IndexError("Position must be positive")
@@ -97,84 +92,72 @@ class Leader(object):
         self.leader = self.leader[:position] + value + self.leader[after:]
 
     @property
-    def record_length(self):
-        # type: () -> str
+    def record_length(self) -> str:
         """Record length (00-04)."""
         return self.leader[:5]
 
     @record_length.setter
-    def record_length(self, value):
-        # type: (str) -> str
+    def record_length(self, value: str) -> None:
         """Record length (00-04)."""
         if len(value) != 5:
             raise BadLeaderValue("Record length is 4 chars field, got %s" % value)
         self._replace_values(position=0, value=value)
 
     @property
-    def record_status(self):
-        # type: () -> str
+    def record_status(self) -> str:
         """Record status (05)."""
         return self.leader[5]
 
     @record_status.setter
-    def record_status(self, value):
-        # type: (str) -> str
+    def record_status(self, value: str) -> None:
         """Record status (05)."""
         if len(value) != 1:
             raise BadLeaderValue("Record status is 1 char field, got %s" % value)
         self._replace_values(position=5, value=value)
 
     @property
-    def type_of_record(self):
-        # type: () -> str
+    def type_of_record(self) -> str:
         """Type of record (06)."""
         return self.leader[6]
 
     @type_of_record.setter
-    def type_of_record(self, value):
-        # type: (str) -> str
+    def type_of_record(self, value: str) -> None:
         """Type of record (06)."""
         if len(value) != 1:
             raise BadLeaderValue("Type of record is 1 char field, got %s" % value)
         self._replace_values(position=6, value=value)
 
     @property
-    def bibliographic_level(self):
-        # type: () -> str
+    def bibliographic_level(self) -> str:
         """Bibliographic level (07)."""
         return self.leader[7]
 
     @bibliographic_level.setter
-    def bibliographic_level(self, value):
-        # type: (str) -> str
+    def bibliographic_level(self, value: str) -> None:
         """Bibliographic level (07)."""
         if len(value) != 1:
             raise BadLeaderValue("Bibliographic level is 1 char field, got %s" % value)
         self._replace_values(position=7, value=value)
 
     @property
-    def type_of_control(self):
-        # type: () -> str
+    def type_of_control(self) -> str:
         """Type of control (08)."""
         return self.leader[8]
 
     @type_of_control.setter
-    def type_of_control(self, value):
-        # type: (str) -> str
+    def type_of_control(self, value: str) -> None:
         """Type of control (08)."""
         if len(value) != 1:
             raise BadLeaderValue("Type of control is 1 char field, got %s" % value)
         self._replace_values(position=8, value=value)
 
     @property
-    def coding_scheme(self):
-        # type: () -> str
+    def coding_scheme(self) -> str:
         """Character coding scheme (09)."""
         return self.leader[9]
 
     @coding_scheme.setter
-    def coding_scheme(self, value):
-        # type: (str) -> str
+    def coding_scheme(self, value: str) -> None:
         """Character coding scheme (09)."""
         if len(value) != 1:
             raise BadLeaderValue(
@@ -183,42 +166,36 @@ class Leader(object):
         self._replace_values(position=9, value=value)
 
     @property
-    def indicator_count(self):
-        # type: () -> str
+    def indicator_count(self) -> str:
         """Indicator count (10)."""
         return self.leader[10]
 
     @indicator_count.setter
-    def indicator_count(self, value):
-        # type: (str) -> str
+    def indicator_count(self, value: str) -> None:
         """Indicator count (10)."""
         if len(value) != 1:
             raise BadLeaderValue("Indicator count is 1 char field, got %s" % value)
         self._replace_values(position=10, value=value)
 
     @property
-    def subfield_code_count(self):
-        # type: () -> str
+    def subfield_code_count(self) -> str:
         """Subfield code count (11)."""
         return self.leader[11]
 
     @subfield_code_count.setter
-    def subfield_code_count(self, value):
-        # type: (str) -> str
+    def subfield_code_count(self, value: str) -> None:
         """Subfield code count (11)."""
         if len(value) != 1:
             raise BadLeaderValue("Subfield code count is 1 char field, got %s" % value)
         self._replace_values(position=11, value=value)
 
     @property
-    def base_address(self):
-        # type: () -> str
+    def base_address(self) -> str:
         """Base address of data (12-16)."""
         return self.leader[12:17]
 
     @base_address.setter
-    def base_address(self, value):
-        # type: (str) -> str
+    def base_address(self, value: str) -> None:
         """Base address of data (12-16)."""
         if len(value) != 5:
             raise BadLeaderValue(
@@ -227,28 +204,24 @@ class Leader(object):
         self._replace_values(position=12, value=value)
 
     @property
-    def encoding_level(self):
-        # type: () -> str
+    def encoding_level(self) -> str:
         """Encoding level (17)."""
         return self.leader[17]
 
     @encoding_level.setter
-    def encoding_level(self, value):
-        # type: (str) -> str
+    def encoding_level(self, value: str) -> None:
         """Encoding level (17)."""
         if len(value) != 1:
             raise BadLeaderValue("Encoding level is 1 char field, got %s" % value)
         self._replace_values(position=17, value=value)
 
     @property
-    def cataloging_form(self):
-        # type: () -> str
+    def cataloging_form(self) -> str:
         """Descriptive cataloging form (18)."""
         return self.leader[18]
 
     @cataloging_form.setter
-    def cataloging_form(self, value):
-        # type: (str) -> str
+    def cataloging_form(self, value: str) -> None:
         """Descriptive cataloging form (18)."""
         if len(value) != 1:
             raise BadLeaderValue(
@@ -257,14 +230,12 @@ class Leader(object):
         self._replace_values(position=18, value=value)
 
     @property
-    def multipart_ressource(self):
-        # type: () -> str
+    def multipart_ressource(self) -> str:
         """Multipart resource record level (19)."""
         return self.leader[19]
 
     @multipart_ressource.setter
-    def multipart_ressource(self, value):
-        # type: (str) -> str
+    def multipart_ressource(self, value: str) -> None:
         """Multipart resource record level (19)."""
         if len(value) != 1:
             raise BadLeaderValue(
@@ -273,14 +244,12 @@ class Leader(object):
         self._replace_values(position=19, value=value)
 
     @property
-    def length_of_field_length(self):
-        # type: () -> str
+    def length_of_field_length(self) -> str:
         """Length of the length-of-field portion (20)."""
         return self.leader[20]
 
     @length_of_field_length.setter
-    def length_of_field_length(self, value):
-        # type: (str) -> str
+    def length_of_field_length(self, value: str) -> None:
         """Length of the length-of-field portion (20)."""
         if len(value) != 1:
             raise BadLeaderValue(
@@ -289,14 +258,12 @@ class Leader(object):
         self._replace_values(position=20, value=value)
 
     @property
-    def starting_character_position_length(self):
-        # type: () -> str
+    def starting_character_position_length(self) -> str:
         """Length of the starting-character-position portion (21)."""
         return self.leader[21]
 
     @starting_character_position_length.setter
-    def starting_character_position_length(self, value):
-        # type: (str) -> str
+    def starting_character_position_length(self, value: str) -> None:
         """Length of the starting-character-position portion (21)."""
         if len(value) != 1:
             raise BadLeaderValue(
@@ -306,14 +273,12 @@ class Leader(object):
         self._replace_values(position=21, value=value)
 
     @property
-    def implementation_defined_length(self):
-        # type: () -> str
+    def implementation_defined_length(self) -> str:
         """Length of the implementation-defined portion (22)."""
         return self.leader[22]
 
     @implementation_defined_length.setter
-    def implementation_defined_length(self, value):
-        # type: (str) -> str
+    def implementation_defined_length(self, value: str) -> None:
         """Length of the starting-character-position portion (22)."""
         if len(value) != 1:
             raise BadLeaderValue(
