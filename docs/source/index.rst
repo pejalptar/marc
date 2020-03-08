@@ -91,7 +91,7 @@ can help the user to take a corrective action and continue or stop the reading:
                 print(reader.current_chunk)
                 # break/continue/raise
 
-`FatalReaderError` happens when reader cann't determine record's boundaries in
+`FatalReaderError` happens when reader can't determine record's boundaries in
 the data stream. To avoid data misinterpretation it stops.
 In case of other errors (wrong encodind etc.) reader continues to
 the next record.
