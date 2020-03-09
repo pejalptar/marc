@@ -7,6 +7,7 @@
 """Pymarc Writer."""
 import json
 import xml.etree.ElementTree as ET
+from typing import IO
 
 import pymarc
 from pymarc import Record, WriteNeedsRecord
@@ -15,16 +16,16 @@ from pymarc import Record, WriteNeedsRecord
 class Writer(object):
     """Base Writer object."""
 
-    def __init__(self, file_handle):
+    def __init__(self, file_handle: IO) -> None:
         """Init."""
         self.file_handle = file_handle
 
-    def write(self, record):
+    def write(self, record: Record) -> None:
         """Write."""
         if not isinstance(record, Record):
             raise WriteNeedsRecord
 
-    def close(self, close_fh=True):
+    def close(self, close_fh: bool = True) -> None:
         """Closes the writer.
 
         If close_fh is False close will also close the underlying file handle
@@ -32,7 +33,7 @@ class Writer(object):
         """
         if close_fh:
             self.file_handle.close()
-        self.file_handle = None
+        self.file_handle = None  # type: ignore
 
 
 class JSONWriter(Writer):
@@ -60,13 +61,13 @@ class JSONWriter(Writer):
         print(string)
     """
 
-    def __init__(self, file_handle):
+    def __init__(self, file_handle: IO) -> None:
         """You need to pass in a text file like object."""
         super(JSONWriter, self).__init__(file_handle)
         self.write_count = 0
         self.file_handle.write("[")
 
-    def write(self, record):
+    def write(self, record: Record) -> None:
         """Writes a record."""
         Writer.write(self, record)
         if self.write_count > 0:
@@ -74,7 +75,7 @@ class JSONWriter(Writer):
         json.dump(record.as_dict(), self.file_handle, separators=(",", ":"))
         self.write_count += 1
 
-    def close(self, close_fh=True):
+    def close(self, close_fh: bool = True) -> None:
         """Closes the writer.
 
         If close_fh is False close will also close the underlying file
@@ -113,11 +114,11 @@ class MARCWriter(Writer):
         writer.close(close_fh=False)
     """
 
-    def __init__(self, file_handle):
+    def __init__(self, file_handle: IO) -> None:
         """You need to pass in a byte file like object."""
         super(MARCWriter, self).__init__(file_handle)
 
-    def write(self, record):
+    def write(self, record: Record) -> None:
         """Writes a record."""
         Writer.write(self, record)
         self.file_handle.write(record.as_marc())
@@ -147,12 +148,12 @@ class TextWriter(Writer):
         print(string)
     """
 
-    def __init__(self, file_handle):
+    def __init__(self, file_handle: IO) -> None:
         """You need to pass in a text file like object."""
         super(TextWriter, self).__init__(file_handle)
         self.write_count = 0
 
-    def write(self, record):
+    def write(self, record: Record) -> None:
         """Writes a record."""
         Writer.write(self, record)
         if self.write_count > 0:
@@ -192,19 +193,19 @@ class XMLWriter(Writer):
         writer.close(close_fh=False)  # Important!
     """
 
-    def __init__(self, file_handle):
+    def __init__(self, file_handle: IO) -> None:
         """You need to pass in a binary file like object."""
         super(XMLWriter, self).__init__(file_handle)
         self.file_handle.write(b'<?xml version="1.0" encoding="UTF-8"?>')
         self.file_handle.write(b'<collection xmlns="http://www.loc.gov/MARC21/slim">')
 
-    def write(self, record):
+    def write(self, record: Record) -> None:
         """Writes a record."""
         Writer.write(self, record)
         node = pymarc.record_to_xml_node(record)
         self.file_handle.write(ET.tostring(node, encoding="utf-8"))
 
-    def close(self, close_fh=True):
+    def close(self, close_fh: bool = True) -> None:
         """Closes the writer.
 
         If close_fh is False close will also close the underlying file handle
