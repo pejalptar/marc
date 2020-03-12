@@ -7,6 +7,7 @@
 """The pymarc.field file."""
 
 import logging
+from typing import List, Optional, Tuple
 
 from pymarc.constants import SUBFIELD_INDICATOR, END_OF_FIELD
 from pymarc.marc8 import marc8_to_unicode
@@ -34,14 +35,14 @@ class Field:
         field = Field(tag='001', data='fol05731351')
     """
 
-    def __init__(self, tag, indicators=None, subfields=None, data=u""):
+    def __init__(
+        self,
+        tag: str,
+        indicators: Optional[List[str]] = None,
+        subfields: Optional[List[str]] = None,
+        data: str = "",
+    ):
         """Initialize a field `tag`."""
-        if indicators is None:
-            indicators = []
-        if subfields is None:
-            subfields = []
-        indicators = [str(x) for x in indicators]
-
         # attempt to normalize integer tags if necessary
         try:
             self.tag = "%03i" % int(tag)
@@ -52,14 +53,14 @@ class Field:
         if self.tag < "010" and self.tag.isdigit():
             self.data = data
         else:
-            self.indicators = indicators
-            self.subfields = subfields
+            self.indicators = [str(x) for x in (indicators or [])]
+            self.subfields = subfields or []
 
     def __iter__(self):
         self.__pos = 0
         return self
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String representation of the field.
 
         A Field object in a string context will return the tag, indicators
@@ -86,7 +87,7 @@ class Field:
                 text += "$%s%s" % subfield
         return text
 
-    def __getitem__(self, subfield):
+    def __getitem__(self, subfield) -> Optional[str]:
         """Retrieve the first subfield with a given subfield code in a field.
 
         .. code-block:: python
@@ -96,11 +97,9 @@ class Field:
         Handy for quick lookups.
         """
         subfields = self.get_subfields(subfield)
-        if len(subfields) > 0:
-            return subfields[0]
-        return None
+        return subfields[0] if subfields else None
 
-    def __contains__(self, subfield):
+    def __contains__(self, subfield: Optional[str]) -> bool:
         """Allows a shorthand test of field membership.
 
         .. code-block:: python
@@ -108,10 +107,9 @@ class Field:
             'a' in field
 
         """
-        subfields = self.get_subfields(subfield)
-        return len(subfields) > 0
+        return bool(self.get_subfields(subfield))
 
-    def __setitem__(self, code, value):
+    def __setitem__(self, code: str, value: str) -> None:
         """Set the values of the subfield code in a field.
 
         .. code-block:: python
@@ -132,7 +130,7 @@ class Field:
                 break
             num_code -= 1
 
-    def __next__(self):
+    def __next__(self) -> Tuple[str, str]:
         if not hasattr(self, "subfields"):
             raise StopIteration
         while self.__pos < len(self.subfields):
@@ -141,16 +139,13 @@ class Field:
             return subfield
         raise StopIteration
 
-    def value(self):
+    def value(self) -> str:
         """Returns the field as a string w/ tag, indicators, and subfield indicators."""
         if self.is_control_field():
             return self.data
-        value_list = []
-        for subfield in self:
-            value_list.append(subfield[1].strip())
-        return " ".join(value_list)
+        return " ".join(subfield[1].strip() for subfield in self)
 
-    def get_subfields(self, *codes):
+    def get_subfields(self, *codes) -> List[str]:
         """Get subfields matching `codes`.
 
         get_subfields() accepts one or more subfield codes and returns
@@ -162,13 +157,9 @@ class Field:
             print(field.get_subfields('a'))
             print(field.get_subfields('a', 'b', 'z'))
         """
-        values = []
-        for subfield in self:
-            if subfield[0] in codes:
-                values.append(subfield[1])
-        return values
+        return [subfield[1] for subfield in self if subfield[0] in codes]
 
-    def add_subfield(self, code, value, pos=None):
+    def add_subfield(self, code: str, value: str, pos=None) -> None:
         """Adds a subfield code/value to the end of a field or at a position (pos).
 
         .. code-block:: python
@@ -188,7 +179,7 @@ class Field:
             self.subfields.insert(i, code)
             self.subfields.insert(i + 1, value)
 
-    def delete_subfield(self, code):
+    def delete_subfield(self, code: str) -> Optional[str]:
         """Deletes the first subfield with the specified 'code' and returns its value.
 
         .. code-block:: python
@@ -208,16 +199,14 @@ class Field:
         except ValueError:
             return None
 
-    def is_control_field(self):
+    def is_control_field(self) -> bool:
         """Returns true or false if the field is considered a control field.
 
         Control fields lack indicators and subfields.
         """
-        if self.tag < "010" and self.tag.isdigit():
-            return True
-        return False
+        return self.tag < "010" and self.tag.isdigit()
 
-    def as_marc(self, encoding):
+    def as_marc(self, encoding: str) -> bytes:
         """Used during conversion of a field to raw marc."""
         if self.is_control_field():
             return (self.data + END_OF_FIELD).encode(encoding)
@@ -230,7 +219,7 @@ class Field:
     # alias for backwards compatibility
     as_marc21 = as_marc
 
-    def format_field(self):
+    def format_field(self) -> str:
         """Returns the field as a string w/ tag, indicators, and subfield indicators.
 
         Like :func:`Field.value() <pymarc.field.Field.value>`, but prettier
@@ -251,32 +240,30 @@ class Field:
                     fielddata += " -- %s" % subfield[1]
         return fielddata.strip()
 
-    def is_subject_field(self):
+    def is_subject_field(self) -> bool:
         """Returns True or False if the field is considered a subject field.
 
         Used by :func:`format_field() <pymarc.field.Field.format_field>` .
         """
-        if self.tag.startswith("6"):
-            return True
-        return False
+        return self.tag.startswith("6")
 
     @property
-    def indicator1(self):
+    def indicator1(self) -> str:
         """Indicator 1."""
         return self.indicators[0]
 
     @indicator1.setter
-    def indicator1(self, value):
+    def indicator1(self, value: str) -> None:
         """Indicator 1 (setter)."""
         self.indicators[0] = value
 
     @property
-    def indicator2(self):
+    def indicator2(self) -> str:
         """Indicator 2."""
         return self.indicators[1]
 
     @indicator2.setter
-    def indicator2(self, value):
+    def indicator2(self, value: str) -> None:
         """Indicator 2 (setter)."""
         self.indicators[1] = value
 
@@ -287,7 +274,7 @@ class RawField(Field):
     Should only be used when input records are wrongly encoded.
     """
 
-    def as_marc(self, encoding=None):
+    def as_marc(self, encoding: Optional[str] = None):
         """Used during conversion of a field to raw marc."""
         if encoding is not None:
             logging.warn("Attempt to force a RawField into encoding %s", encoding)
@@ -296,13 +283,13 @@ class RawField(Field):
         marc = self.indicator1.encode("ascii") + self.indicator2.encode("ascii")
         for subfield in self:
             marc += SUBFIELD_INDICATOR.encode("ascii") + subfield[0] + subfield[1]
-        return marc + END_OF_FIELD
+        return marc + END_OF_FIELD.encode("ascii")
 
 
-def map_marc8_field(f):
+def map_marc8_field(f: Field) -> Field:
     """Map MARC8 field."""
     if f.is_control_field():
         f.data = marc8_to_unicode(f.data)
     else:
-        f.subfields = map(marc8_to_unicode, f.subfields)
+        f.subfields = [marc8_to_unicode(subfield) for subfield in f.subfields]
     return f
