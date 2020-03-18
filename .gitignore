@@ -6,6 +6,9 @@ dist
 .eggs
 *.egg
 *.e4p
+.eric?project
+.issues
+.ropeproject
 Pipfile
 Pipfile.lock
 .vscode

@@ -6,6 +6,7 @@
 Pymarc
 ======
 
+
 Release v\ |version|
 
 Pymarc is a Python 3 library for working with bibliographic data encoded in MARC21.
@@ -62,6 +63,38 @@ available here in pymarc repository:
     Design patterns : elements of reusable object-oriented software /
     Introduction to algorithms /
     ANSI Common Lisp /
+
+Sometimes MARC data contains an errors of some kind.
+In this case reader returns `None` instead of record object
+and two reader's properties `current_exception` and `current_chunk`
+can help the user to take a corrective action and continue or stop the reading:
+
+.. code-block:: python
+
+    from pymarc import MARCReader
+    from pymarc import exceptions as exc
+
+    with open('test/marc.dat', 'rb') as fh:
+        reader = MARCReader(fh)
+        for record in reader:
+            if record:
+                # consume the record:
+                print(record.title())
+            elif isinstance(reader.current_exception, exc.FatalReaderError):
+                # data file format error
+                # reader will raise StopIteration
+                print(reader.current_exception)
+                print(reader.current_chunk)
+            else:
+                # fix the record data, skip or stop reading:
+                print(reader.current_exception)
+                print(reader.current_chunk)
+                # break/continue/raise
+
+`FatalReaderError` happens when reader can't determine record's boundaries in
+the data stream. To avoid data misinterpretation it stops.
+In case of other errors (wrong encodind etc.) reader continues to
+the next record.
 
 A pymarc.Record object has a few handy methods like title for
 getting at bits of a bibliographic record, others include: author,
