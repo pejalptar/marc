@@ -9,8 +9,8 @@ import os
 import sys
 import json
 
-from io import BytesIO, StringIO
-from typing import Callable, IO, Union, Iterator
+from io import IOBase, BytesIO, StringIO
+from typing import Any, Callable, BinaryIO, IO, Iterator, Optional, Union
 
 from pymarc.constants import END_OF_RECORD
 from pymarc import Record, Field
@@ -96,6 +96,8 @@ class MARCReader(Reader):
     _current_chunk = None
     _current_exception = None
 
+    file_handle: IO
+
     @property
     def current_chunk(self):
         """Current chunk."""
@@ -108,7 +110,7 @@ class MARCReader(Reader):
 
     def __init__(
         self,
-        marc_target: Union[IO, bytes],
+        marc_target: Union[BinaryIO, bytes],
         to_unicode: bool = True,
         force_utf8: bool = False,
         hide_utf8_warnings: bool = False,
@@ -128,16 +130,14 @@ class MARCReader(Reader):
         self.utf8_handling = utf8_handling
         self.file_encoding = file_encoding
         self.permissive = permissive
-        if hasattr(marc_target, "read") and callable(marc_target.read):  # type: ignore
-            self.file_handle = marc_target
+        if isinstance(marc_target, bytes):
+            self.file_handle = BytesIO(marc_target)
         else:
-            self.file_handle = BytesIO(marc_target)  # type: ignore
+            self.file_handle = marc_target
 
     def close(self) -> None:
         """Close the handle."""
-        if self.file_handle:
-            self.file_handle.close()  # type: ignore
-            self.file_handle = None  # type: ignore
+        self.file_handle.close()
 
     def __next__(self):
         """Read and parse the next record."""
@@ -162,7 +162,7 @@ class MARCReader(Reader):
             self._current_exception = exceptions.RecordLengthInvalid()
             return
 
-        chunk = self.file_handle.read(length - 5)  # type: ignore
+        chunk = self.file_handle.read(length - 5)
         chunk = first5 + chunk
         self._current_chunk = chunk
 
@@ -187,7 +187,7 @@ class MARCReader(Reader):
             self._current_exception = ex
 
 
-def map_records(f: Callable, *files: list) -> None:
+def map_records(f: Callable, *files: BytesIO) -> None:
     """Applies a given function to each record in a batch.
 
     You can pass in multiple batches.
@@ -199,14 +199,19 @@ def map_records(f: Callable, *files: list) -> None:
         map_records(print_title, file('marc.dat'))
     """
     for file in files:
-        list(map(f, MARCReader(file)))  # type: ignore
+        list(map(f, MARCReader(file)))
 
 
 class JSONReader(Reader):
     """JSON Reader."""
 
+    file_handle: IO
+
     def __init__(
-        self, marc_target: Union[IO, str], encoding: str = "utf-8", stream: bool = False
+        self,
+        marc_target: Union[bytes, str],
+        encoding: str = "utf-8",
+        stream: bool = False
     ) -> None:
         """The constructor to which you can pass either raw marc or a file-like object.
 
@@ -214,18 +219,18 @@ class JSONReader(Reader):
         an object that responds to read().
         """
         self.encoding = encoding
-        if hasattr(marc_target, "read") and callable(marc_target.read):  # type: ignore
+        if isinstance(marc_target, IOBase):
             self.file_handle = marc_target
         else:
-            if os.path.exists(marc_target):  # type: ignore
-                self.file_handle = open(marc_target, "r")  # type: ignore
+            if os.path.exists(marc_target):
+                self.file_handle = open(marc_target, "r")
             else:
                 self.file_handle = StringIO(marc_target)  # type: ignore
         if stream:
             sys.stderr.write(
                 "Streaming not yet implemented, your data will be loaded into memory\n"
             )
-        self.records = json.load(self.file_handle, strict=False)  # type: ignore
+        self.records = json.load(self.file_handle, strict=False)
 
     def __iter__(self) -> Iterator:
         if hasattr(self.records, "__iter__") and not isinstance(self.records, dict):
