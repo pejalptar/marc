@@ -15,7 +15,7 @@ import unicodedata
 from pymarc import marc8_mapping
 
 
-def marc8_to_unicode(marc8, hide_utf8_warnings=False):
+def marc8_to_unicode(marc8: str, hide_utf8_warnings: bool = False) -> str:
     """Pass in a string, and get back a Unicode object.
 
     .. code-block:: python
@@ -70,15 +70,15 @@ class MARC8ToUnicode:
     basic_latin = 0x42
     ansel = 0x45
 
-    def __init__(self, G0=basic_latin, G1=ansel, quiet=False):
+    def __init__(self, G0: int = basic_latin, G1: int = ansel, quiet: bool = False) -> None:
         """Init."""
         self.g0 = G0
-        self.g0_set = set([b"(", b",", b"$"])
+        self.g0_set = {b"(", b",", b"$"}
         self.g1 = G1
-        self.g1_set = set([b")", b"-", b"$"])
+        self.g1_set = {b")", b"-", b"$"}
         self.quiet = quiet
 
-    def translate(self, marc8_string):
+    def translate(self, marc8_string: str) -> str:
         """Translate."""
         # don't choke on empty marc8_string
         if not marc8_string:
@@ -141,7 +141,7 @@ class MARC8ToUnicode:
                 code_point = ord(marc8_string[pos : pos + 1])
                 pos += 1
 
-            if code_point < 0x20 or (code_point > 0x80 and code_point < 0xA0):
+            if code_point < 0x20 or 0x80 < code_point < 0xA0:
                 uni = chr(code_point)
                 continue
 
@@ -177,9 +177,4 @@ class MARC8ToUnicode:
 
         # what to do if combining chars left over?
         uni_str = u"".join(uni_list)
-
-        # unicodedata.normalize not available until Python 2.3
-        if hasattr(unicodedata, "normalize"):
-            uni_str = unicodedata.normalize("NFC", uni_str)
-
-        return uni_str
+        return unicodedata.normalize("NFC", uni_str)
