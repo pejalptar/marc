@@ -1,40 +1,20 @@
-stages:
-  - lint
-  - test
-
 default:
   before_script:
     - pip install -r requirements.dev.txt
-
-.lint-flake8: &lint-flake8
-  stage: lint
-  script: flake8 .
-
-.lint-black: &lint-black
-  stage: lint
-  script: black --check --diff .
-
-.unit-tests: &unit-tests
-  stage: test
-  script: python setup.py test
+  script:
+    - black --check --diff .
+    - flake8 .
+    - mypy --ignore-missing-imports .
+    - python setup.py test
 
 test-3.8:
   image: python:3.8-slim-buster
-  <<: *lint-flake8
-  <<: *lint-black
-  <<: *unit-tests
 
 test-3.7:
   image: python:3.7-slim-buster
-  <<: *lint-flake8
-  <<: *lint-black
-  <<: *unit-tests
 
 test-3.6:
   image: python:3.6-slim-buster
-  <<: *lint-flake8
-  <<: *lint-black
-  <<: *unit-tests
 
 test-3.6-pypy:
   image: pypywheels/manylinux2010-pypy_x86_64
