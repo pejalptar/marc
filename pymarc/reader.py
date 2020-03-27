@@ -9,7 +9,8 @@ import os
 import sys
 import json
 
-from io import BytesIO, StringIO
+from io import IOBase, BytesIO, StringIO
+from typing import Any, Callable, BinaryIO, IO, Iterator, Optional, Union
 
 from pymarc.constants import END_OF_RECORD
 from pymarc import Record, Field
@@ -95,6 +96,8 @@ class MARCReader(Reader):
     _current_chunk = None
     _current_exception = None
 
+    file_handle: IO
+
     @property
     def current_chunk(self):
         """Current chunk."""
@@ -107,13 +110,14 @@ class MARCReader(Reader):
 
     def __init__(
         self,
-        marc_target,
-        to_unicode=True,
-        force_utf8=False,
-        hide_utf8_warnings=False,
-        utf8_handling="strict",
-        file_encoding="iso8859-1",
-    ):
+        marc_target: Union[BinaryIO, bytes],
+        to_unicode: bool = True,
+        force_utf8: bool = False,
+        hide_utf8_warnings: bool = False,
+        utf8_handling: str = "strict",
+        file_encoding: str = "iso8859-1",
+        permissive: bool = False,
+    ) -> None:
         """The constructor to which you can pass either raw marc or a file-like object.
 
         Basically the argument you pass in should be raw MARC in transmission format or
@@ -125,16 +129,15 @@ class MARCReader(Reader):
         self.hide_utf8_warnings = hide_utf8_warnings
         self.utf8_handling = utf8_handling
         self.file_encoding = file_encoding
-        if hasattr(marc_target, "read") and callable(marc_target.read):
-            self.file_handle = marc_target
-        else:
+        self.permissive = permissive
+        if isinstance(marc_target, bytes):
             self.file_handle = BytesIO(marc_target)
+        else:
+            self.file_handle = marc_target
 
-    def close(self):
+    def close(self) -> None:
         """Close the handle."""
-        if self.file_handle:
-            self.file_handle.close()
-            self.file_handle = None
+        self.file_handle.close()
 
     def __next__(self):
         """Read and parse the next record."""
@@ -184,7 +187,7 @@ class MARCReader(Reader):
             self._current_exception = ex
 
 
-def map_records(f, *files):
+def map_records(f: Callable, *files: BytesIO) -> None:
     """Applies a given function to each record in a batch.
 
     You can pass in multiple batches.
@@ -202,34 +205,41 @@ def map_records(f, *files):
 class JSONReader(Reader):
     """JSON Reader."""
 
-    def __init__(self, marc_target, encoding="utf-8", stream=False):
+    file_handle: IO
+
+    def __init__(
+        self,
+        marc_target: Union[bytes, str],
+        encoding: str = "utf-8",
+        stream: bool = False
+    ) -> None:
         """The constructor to which you can pass either raw marc or a file-like object.
 
         Basically the argument you pass in should be raw JSON in transmission format or
         an object that responds to read().
         """
         self.encoding = encoding
-        if hasattr(marc_target, "read") and callable(marc_target.read):
+        if isinstance(marc_target, IOBase):
             self.file_handle = marc_target
         else:
             if os.path.exists(marc_target):
                 self.file_handle = open(marc_target, "r")
             else:
-                self.file_handle = StringIO(marc_target)
+                self.file_handle = StringIO(marc_target)  # type: ignore
         if stream:
             sys.stderr.write(
                 "Streaming not yet implemented, your data will be loaded into memory\n"
             )
         self.records = json.load(self.file_handle, strict=False)
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator:
         if hasattr(self.records, "__iter__") and not isinstance(self.records, dict):
             self.iter = iter(self.records)
         else:
             self.iter = iter([self.records])
         return self
 
-    def __next__(self):
+    def __next__(self) -> Iterator:
         jobj = next(self.iter)
         rec = Record()
         rec.leader = jobj["leader"]
@@ -237,7 +247,7 @@ class JSONReader(Reader):
             k, v = list(field.items())[0]
             if "subfields" in v and hasattr(v, "update"):
                 # flatten m-i-j dict to list in pymarc
-                subfields = []
+                subfields: list = []
                 for sub in v["subfields"]:
                     for code, value in sub.items():
                         subfields.extend((code, value))
