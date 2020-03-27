@@ -70,7 +70,9 @@ class MARC8ToUnicode:
     basic_latin = 0x42
     ansel = 0x45
 
-    def __init__(self, G0: int = basic_latin, G1: int = ansel, quiet: bool = False) -> None:
+    def __init__(
+        self, G0: int = basic_latin, G1: int = ansel, quiet: bool = False
+    ) -> None:
         """Init."""
         self.g0 = G0
         self.g0_set = {b"(", b",", b"$"}
