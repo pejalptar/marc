@@ -48,7 +48,7 @@ class JSONWriterTest(unittest.TestCase):
             writer = pymarc.JSONWriter(file_handle)
             writer.close(close_fh=False)
             actual = json.loads(file_handle.getvalue())
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
         finally:
             file_handle.close()
 
@@ -70,7 +70,7 @@ class JSONWriterTest(unittest.TestCase):
             writer.write(record)
             writer.close(close_fh=False)
             actual = json.loads(file_handle.getvalue())
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
         finally:
             file_handle.close()
 
@@ -116,7 +116,7 @@ class JSONWriterTest(unittest.TestCase):
             writer.write(record)
             writer.close(close_fh=False)
             actual = json.loads(file_handle.getvalue())
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
         finally:
             file_handle.close()
 
@@ -218,7 +218,7 @@ class JSONWriterTest(unittest.TestCase):
             writer.write(record)
             writer.close(close_fh=False)
             actual = json.loads(file_handle.getvalue())
-            self.assertEquals(actual, expected)
+            self.assertEqual(actual, expected)
         finally:
             file_handle.close()
 
@@ -300,7 +300,7 @@ class TextWriterTest(unittest.TestCase):
             )
             writer.write(record)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
@@ -343,7 +343,7 @@ class TextWriterTest(unittest.TestCase):
             )
             writer.write(record)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
@@ -358,7 +358,7 @@ class TextWriterTest(unittest.TestCase):
             record = pymarc.Record()
             writer.write(record)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
@@ -398,7 +398,7 @@ class XMLWriterTest(unittest.TestCase):
         try:
             writer = pymarc.XMLWriter(file_handle)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
@@ -418,7 +418,7 @@ class XMLWriterTest(unittest.TestCase):
             record = pymarc.Record()
             writer.write(record)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
@@ -449,7 +449,7 @@ class XMLWriterTest(unittest.TestCase):
             )
             writer.write(record)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
@@ -512,7 +512,7 @@ class XMLWriterTest(unittest.TestCase):
             )
             writer.write(record)
             writer.close(close_fh=False)
-            self.assertEquals(file_handle.getvalue(), expected)
+            self.assertEqual(file_handle.getvalue(), expected)
         finally:
             file_handle.close()
 
