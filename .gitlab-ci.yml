@@ -4,7 +4,7 @@
   script:
     - black --check --diff .
     - flake8 .
-    #- mypy --ignore-missing-imports .
+    - mypy --ignore-missing-imports .
     - python setup.py test
 
 test-3.8:
