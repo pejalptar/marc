@@ -211,7 +211,7 @@ class JSONReader(Reader):
         self,
         marc_target: Union[bytes, str],
         encoding: str = "utf-8",
-        stream: bool = False
+        stream: bool = False,
     ) -> None:
         """The constructor to which you can pass either raw marc or a file-like object.
 
