@@ -10,7 +10,7 @@ import sys
 import json
 
 from io import IOBase, BytesIO, StringIO
-from typing import Any, Callable, BinaryIO, IO, Iterator, Optional, Union
+from typing import Callable, BinaryIO, IO, Iterator, Union
 
 from pymarc.constants import END_OF_RECORD
 from pymarc import Record, Field
