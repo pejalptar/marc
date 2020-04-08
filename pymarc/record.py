@@ -607,7 +607,7 @@ class Record:
 
 def map_marc8_record(record):
     """Map MARC-8 record."""
-    record.fields = map(map_marc8_field, record.fields)
+    record.fields = [map_marc8_field(field) for field in record.fields]
     leader = list(record.leader)
     leader[9] = "a"  # see http://www.loc.gov/marc/specifications/speccharucs.html
     record.leader = "".join(leader)
