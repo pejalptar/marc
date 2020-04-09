@@ -15,7 +15,7 @@ import unicodedata
 from pymarc import marc8_mapping
 
 
-def marc8_to_unicode(marc8: str, hide_utf8_warnings: bool = False) -> str:
+def marc8_to_unicode(marc8, hide_utf8_warnings: bool = False) -> str:
     """Pass in a string, and get back a Unicode object.
 
     .. code-block:: python
@@ -80,7 +80,7 @@ class MARC8ToUnicode:
         self.g1_set = {b")", b"-", b"$"}
         self.quiet = quiet
 
-    def translate(self, marc8_string: str) -> str:
+    def translate(self, marc8_string):
         """Translate."""
         # don't choke on empty marc8_string
         if not marc8_string:
