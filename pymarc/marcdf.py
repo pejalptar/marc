@@ -4,13 +4,12 @@
 # propagated, or distributed according to the terms contained in the LICENSE
 # file.
 
-from .record import *
-from .field import *
-from .exceptions import *
-from .reader import *
-from .writer import *
-from .constants import *
-from .marc8 import marc8_to_unicode, MARC8ToUnicode
-from .marcxml import *
-from .marcjson import *
-from .marcdf import *
+"""From MARC21 to Pandas DataFrame and Series."""
+
+from pandas import Series
+from pymarc import Record
+
+
+def record_to_series(record: Record) -> Series:
+    """Converts a Record into a Pandas Series."""
+    return Series(record.as_dict)
