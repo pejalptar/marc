@@ -177,26 +177,12 @@ class FieldTest(unittest.TestCase):
         self.assertTrue(self.field["b"] is None)
 
     def test_subfield_dict(self):
-        dictionary = self.field.subfields_as_dict()
-        self.assertTrue(isinstance(dictionary, dict))
-        self.assertIn("a", dictionary)
-        self.assertEqual(dictionary["a"], "Huckleberry Finn: ")
-
-    def test_repeated_subfield_dict(self):
         field = Field(
             tag="680",
             indicators=[" ", " "],
             subfields=["a", "Repeated", "a", "Subfield"],
         )
-
-        # default is the last value
         dictionary = field.subfields_as_dict()
-        self.assertTrue(isinstance(dictionary, dict))
-        self.assertIn("a", dictionary)
-        self.assertEqual(dictionary["a"], "Subfield")
-
-        #
-        dictionary = field.subfields_as_dict(repeatable=True)
         self.assertTrue(isinstance(dictionary, dict))
         self.assertIn("a", dictionary)
         self.assertEqual(dictionary["a"], ["Repeated", "Subfield"])

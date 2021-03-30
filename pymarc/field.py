@@ -8,7 +8,7 @@
 
 import logging
 from collections import defaultdict
-from typing import List, Optional, Tuple, Dict, Union
+from typing import List, Optional, Tuple, DefaultDict
 
 from pymarc.constants import SUBFIELD_INDICATOR, END_OF_FIELD
 from pymarc.marc8 import marc8_to_unicode
@@ -200,27 +200,18 @@ class Field:
         except ValueError:
             return None
 
-    def subfields_as_dict(self, repeatable=False) -> Dict[str, Union[str, list]]:
-        """Returns the subfields as a dictionary, using subfield codes as keys.
+    def subfields_as_dict(self) -> DefaultDict[str, list]:
+        """Returns the subfields as a dictionary.
 
-        By default each entry in the dictionary is a mapping of subfield code
-        to subfield value. When the repeatable parameter is set to True the
-        dictionary values will be lists, in order to accomodate situations where
-        the subfield codes are repeated.
+        The dictionary is a mapping of subfield codes and values. Since
+        subfield codes can repeat the values are a list.
         """
         keys = self.subfields[0::2]
-        values = self.subfields[1::2]
-        subfields: Dict[str, Union[str, list]] = {}
-
-        if repeatable:
-            subs = defaultdict(list)
-            for k, v in zip(keys, values):
-                subs[k].append(v)
-            subfields = dict(subs)
-        else:
-            subfields = dict(zip(keys, values))
-
-        return subfields
+        vals = self.subfields[1::2]
+        subs: DefaultDict[str, list] = defaultdict(list)
+        for k, v in zip(keys, vals):
+            subs[k].append(v)
+        return subs
 
     def is_control_field(self) -> bool:
         """Returns true or false if the field is considered a control field.
