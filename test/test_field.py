@@ -176,6 +176,12 @@ class FieldTest(unittest.TestCase):
         self.field.delete_subfield("b")
         self.assertTrue(self.field["b"] is None)
 
+    def test_subfield_dict(self):
+        dictionary = self.field.subfields_as_dict()
+        self.assertTrue(isinstance(dictionary, dict))
+        self.assertIn("a", dictionary)
+        self.assertEqual(dictionary["a"], "Huckleberry Finn: ")
+
     def test_set_indicators_affects_str(self):
         self.field.indicators[0] = "9"
         self.field.indicator2 = "9"
