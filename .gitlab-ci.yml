@@ -7,6 +7,10 @@
     - mypy --ignore-missing-imports .
     - python setup.py test
 
+test-3.9:
+  image: python:3.9-slim-buster
+  <<: *default
+
 test-3.8:
   image: python:3.8-slim-buster
   <<: *default
