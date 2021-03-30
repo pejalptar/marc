@@ -7,7 +7,7 @@
 """The pymarc.field file."""
 
 import logging
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from pymarc.constants import SUBFIELD_INDICATOR, END_OF_FIELD
 from pymarc.marc8 import marc8_to_unicode
@@ -198,6 +198,19 @@ class Field:
                 return None
         except ValueError:
             return None
+
+    def subfields_as_dict(self) -> Dict[str, str]:
+        """Returns the subfields as a dictionary, using subfield codes as keys."""
+        subfield_keys = self.subfields[0::2]
+        subfield_values = self.subfields[1::2]
+
+        subfields = {}
+        counter = 0
+        while counter < len(subfield_keys):
+            subfields[subfield_keys[counter]] = subfield_values[counter]
+            counter += 1
+
+        return subfields
 
     def is_control_field(self) -> bool:
         """Returns true or false if the field is considered a control field.
