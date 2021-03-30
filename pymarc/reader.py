@@ -222,7 +222,7 @@ class JSONReader(Reader):
         if isinstance(marc_target, IOBase):
             self.file_handle = marc_target
         else:
-            if os.path.exists(marc_target):
+            if isinstance(marc_target, str) and os.path.exists(marc_target):
                 self.file_handle = open(marc_target, "r")
             else:
                 self.file_handle = StringIO(marc_target)  # type: ignore

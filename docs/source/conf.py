@@ -19,8 +19,11 @@ documentation root, use os.path.abspath to make it absolute, like shown here.
 import os
 import sys
 
+from typing import List, Dict
+
 sys.path.append(os.path.join(os.path.dirname(__file__), "../.."))
 print(sys.path)
+
 # sys.path.insert(0, os.path.abspath('.'))
 
 # -- General configuration ------------------------------------------------
@@ -95,7 +98,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns = List[str]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -252,7 +255,7 @@ htmlhelp_basename = "pymarcdoc"
 
 # -- Options for LaTeX output ---------------------------------------------
 
-latex_elements = {
+latex_elements: Dict[str, str] = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
