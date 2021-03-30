@@ -7,7 +7,8 @@
 """The pymarc.field file."""
 
 import logging
-from typing import List, Optional, Tuple, Dict
+from collections import defaultdict
+from typing import List, Optional, Tuple, Dict, Union
 
 from pymarc.constants import SUBFIELD_INDICATOR, END_OF_FIELD
 from pymarc.marc8 import marc8_to_unicode
@@ -199,16 +200,25 @@ class Field:
         except ValueError:
             return None
 
-    def subfields_as_dict(self) -> Dict[str, str]:
-        """Returns the subfields as a dictionary, using subfield codes as keys."""
-        subfield_keys = self.subfields[0::2]
-        subfield_values = self.subfields[1::2]
+    def subfields_as_dict(self, repeatable=False) -> Dict[str, Union[str, list]]:
+        """Returns the subfields as a dictionary, using subfield codes as keys.
 
-        subfields = {}
-        counter = 0
-        while counter < len(subfield_keys):
-            subfields[subfield_keys[counter]] = subfield_values[counter]
-            counter += 1
+        By default each entry in the dictionary is a mapping of subfield code
+        to subfield value. When the repeatable parameter is set to True the
+        dictionary values will be lists, in order to accomodate situations where
+        the subfield codes are repeated.
+        """
+        keys = self.subfields[0::2]
+        values = self.subfields[1::2]
+        subfields: Dict[str, Union[str, list]] = {}
+
+        if repeatable:
+            subs = defaultdict(list)
+            for k, v in zip(keys, values):
+                subs[k].append(v)
+            subfields = dict(subs)
+        else:
+            subfields = dict(zip(keys, values))
 
         return subfields
 
