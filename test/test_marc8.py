@@ -43,7 +43,7 @@ class MARC8Test(TestCase):
 
     def test_marc8_reader_to_1251_without_1251(self):
         with open("test/1251.dat", "rb") as fh:
-            reader = MARCReader(fh,)
+            reader = MARCReader(fh)
             try:
                 r = next(reader)
                 r = next(reader)
